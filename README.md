@@ -16,6 +16,7 @@ Latest version:
 <tr><th>Deployment</th><th>Administration</th></tr>
 <tr>
   <td valign=top>install<br>uninstall<br></td>
+    <td valign=top><br> <br></td>
 </tr></table>
 
 ## Deployment
@@ -57,7 +58,7 @@ variables:<br>
 
 - **roadmap**<br>
   Vision and future developments.
-  See [roadmap](ROADMAP.md)
+  See [roadmap](docs/ROADMAP.md)
 
 ***
 
