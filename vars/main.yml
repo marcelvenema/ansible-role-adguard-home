@@ -1,0 +1,14 @@
+---
+
+actions:
+    - install:
+          description: "Install the latest version of AdGuard Home."
+          icon: "media/icon_adguard_home.png"
+          parameters:
+              - uninstall:
+                    description: "Uninstall existing AdGuard Home before installation."
+                    required: false
+
+    - uninstall:
+          description: "Uninstall AdGuard Home."
+          icon: "media/icon_adguard_home.png"

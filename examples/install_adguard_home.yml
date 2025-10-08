@@ -1,0 +1,22 @@
+---
+- name: Install Adguard Home container
+  hosts: dev11
+  gather_facts: true
+  become: true
+
+  tasks:
+
+    # Information message
+    - name: Information message
+      ansible.builtin.debug:
+        msg:
+          - "#########################################################"
+          - "Install Adguard Home container"
+          - "#########################################################"
+
+    # Install Adguard Home
+    - name: Install AdGuard Home...
+      ansible.builtin.include_role:
+        name: adguard-home
+      vars:
+        # action: install

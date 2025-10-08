@@ -1,0 +1,117 @@
+---
+
+#########################################################
+## AdGuard Home install action                         ##
+#########################################################
+
+#########################################################
+## Pre-installation uninstall                          ##
+#########################################################
+
+# Run uninstall if uninstall is set
+- name: Run uninstall task...
+  ansible.builtin.include_tasks: uninstall.yml
+  when: adguard_home_vars.container.uninstall == true
+
+#########################################################
+## Installation on podman                              ##
+#########################################################
+
+- name: Install container on Podman...
+  when: adguard_home_vars.container.platform == "podman"
+  block:
+
+    # Gather installed packages
+    - name: Gather installed packages
+      ansible.builtin.package_facts:
+        manager: auto
+
+    # Check if podman is detected
+    - name: Check if podman is detected
+      ansible.builtin.assert:
+        that: '"podman" in ansible_facts.packages'
+        fail_msg: "Podman is not installed. Please install Podman first. Cannot continue..."
+
+    #####################################################
+    ## Volume configuration                            ##
+    #####################################################
+
+    # Create volumes
+    - name: Create configuration folders...
+      ansible.builtin.include_role:
+        name: podman
+      vars:
+        action: create_volumes
+        container_volumes: "{{ adguard_home_vars.container.volumes }}"
+
+    #####################################################
+    ## Firewall configuration                          ##
+    #####################################################
+
+    # Register variables
+    - name: Register variable (firewall_ports)...
+      ansible.builtin.set_fact:
+        firewall_ports: []
+
+    # Extract port mappings
+    - name: Get port mappings...
+      ansible.builtin.set_fact:
+        firewall_ports: "{{ firewall_ports + [ (item.split(':')[0] | trim) ~ '/' ~ (item.split('/')[-1] | trim | default('tcp')) ] }}"
+      loop: "{{ adguard_home_vars.container.ports }}"
+
+    # Ensure firewall service is running
+    - name: Ensure firewall service is running...
+      ansible.builtin.service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Open firewall ports for host side of mappings
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        state: enabled
+        permanent: true
+        immediate: true
+      loop: "{{ firewall_ports | unique }}"
+
+    #####################################################
+    ## Import container                                ##
+    #####################################################
+
+    # Import container
+    - name: "Install container on podman ({{ adguard_home_vars.container.name }})..."
+      ansible.builtin.include_role:
+        name: podman
+      vars:
+        action: import_container
+        container_name: "{{ adguard_home_vars.container.name }}"
+        container_repository_url: "{{ adguard_home_vars.container.repository_url }}"
+        container_repository_tag: "{{ adguard_home_vars.container.repository_tag | default('latest') }}"
+        container_repository_checksum: "{{ adguard_home_vars.container.repository_checksum | default(omit) }}"
+        container_repository_checksum_algorithm: "{{ adguard_home_vars.container.repository_checksum_algorithm | default(omit) }}"
+        container_ports: "{{ adguard_home_vars.container.ports }}"
+        container_volumes: "{{ adguard_home_vars.container.volumes }}"
+        container_env: "{{ adguard_home_vars.container.env | default({}) }}"
+        container_healthcheck: "{{ adguard_home_vars.container.healthcheck | default(omit) }}"
+        container_healthcheck_fail: "{{ adguard_home_vars.container.healthcheck_fail | default('none') }}"
+        container_healthcheck_retries: "{{ adguard_home_vars.container.healthcheck_retries | default(omit) }}"
+        container_healthcheck_interval: "{{ adguard_home_vars.container.healthcheck_interval | default(omit) }}"
+        container_healthcheck_timeout: "{{ adguard_home_vars.container.healthcheck_timeout | default(omit) }}"
+        container_healthcheck_start: "{{ adguard_home_vars.container.healthcheck_start | default(omit) }}"
+        container_quadlet_options: "{{ adguard_home_vars.container.quadlet_options | default(omit) }}"
+
+#########################################################
+## Configuration                                       ##
+#########################################################
+
+# Configure application
+- name: Start configure task...
+  ansible.builtin.include_tasks: configure.yml
+
+#########################################################
+## Post-install                                        ##
+#########################################################
+
+# Unset variables
+# - name: Unset variables...
+#  ansible.builtin.set_fact:

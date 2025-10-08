@@ -1,0 +1,47 @@
+---
+
+#########################################################
+## Adguard Home configure action                       ##
+#########################################################
+
+#########################################################
+## Redirect port 53 to 8053                            ##
+#########################################################
+
+# Redirect port 53 TCP
+- name: Redirect DNS port 53 to 8053 (TCP)...
+  become: true
+  ansible.builtin.firewalld:
+    rich_rule: 'rule family="ipv4" forward-port port="53" protocol="tcp" to-port="8053"'
+    permanent: true
+    state: enabled
+
+# redirect port 53 UDP
+- name: Redirect DNS port 53 to 8053 (UDP)...
+  become: true
+  ansible.builtin.firewalld:
+    rich_rule: 'rule family="ipv4" forward-port port="53" protocol="udp" to-port="8053"'
+    permanent: true
+    state: enabled
+
+# Reload firewall to apply changes
+- name: Reload firewalld to apply changes
+  become: true
+  ansible.builtin.systemd:
+    name: firewalld
+    state: reloaded
+
+#########################################################
+## Configure AdGuard Home                              ##
+#########################################################
+
+
+
+#########################################################
+## Post-configuration                                  ##
+#########################################################
+
+# Unset variables
+# - name: Unset variables...
+#  ansible.builtin.set_fact:
+#    <variable>: null

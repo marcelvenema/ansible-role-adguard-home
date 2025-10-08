@@ -1,0 +1,51 @@
+---
+
+############################################################
+## Main module for AdGuard Home Ansible role              ##
+############################################################
+
+# Merge role defaults with vault, include nested variables
+# Nested merge does not work well, so use workaround to combine variables
+- name: Gather defaults (kafka_ui)...
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/main.yml"
+    name: adguard_home_defaults
+
+# Merge role defaults, include nested variables
+- name: Merge role defaults with collected variables...
+  ansible.builtin.set_fact:
+    adguard_home_vars: "{{ adguard_home_defaults.adguard_home | combine(adguard_home | default({}), recursive=true) }}"
+
+# If action variable is not defined, gather status of the service and set action variable
+- name: Set action variable status...
+  ansible.builtin.include_tasks: set_action.yml
+  when: action is not defined
+
+# Show message
+- name: Show action message
+  ansible.builtin.debug:
+    msg: "Starting role {{ role_name }}... action: {{ action }}."
+
+# Assert that action is in actions
+- name: "Verify valid action ({{ action }})..."
+  ansible.builtin.assert:
+    that:
+      - action in (actions | map('dict2items') | map('first') | map(attribute='key') | list)
+    fail_msg: "The action '{{ action }}' is not in the list of valid actions..."
+    quiet: true
+
+# TODO: Send message to Kafka bus
+- name: Publish message to Kafka bus...
+  ansible.builtin.debug:
+    msg: "TODO: Publish message to Kafka bus..."
+  when: kafka_bootstrap_servers is defined
+
+# -------------------------------------------------------
+
+- name: Start install action...
+  ansible.builtin.include_tasks: install.yml
+  when: action == "install"
+
+- name: Start uninstall action...
+  ansible.builtin.include_tasks: uninstall.yml
+  when: action == "uninstall"
