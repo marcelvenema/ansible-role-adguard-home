@@ -43,6 +43,7 @@
       vars:
         action: create_volumes
         container_volumes: "{{ adguard_home_vars.container.volumes }}"
+        volume_mode: "{{ adguard_home_vars.container.volume_mode }}"
 
     #####################################################
     ## Firewall configuration                          ##
@@ -68,6 +69,7 @@
 
     - name: Open firewall ports for host side of mappings
       ansible.posix.firewalld:
+        zone: public
         port: "{{ item }}"
         state: enabled
         permanent: true
@@ -91,6 +93,7 @@
         container_repository_checksum_algorithm: "{{ adguard_home_vars.container.repository_checksum_algorithm | default(omit) }}"
         container_ports: "{{ adguard_home_vars.container.ports }}"
         container_volumes: "{{ adguard_home_vars.container.volumes }}"
+        container_arch: "{{ adguard_home_vars.container.arch | default(omit) }}"
         container_env: "{{ adguard_home_vars.container.env | default({}) }}"
         container_healthcheck: "{{ adguard_home_vars.container.healthcheck | default(omit) }}"
         container_healthcheck_fail: "{{ adguard_home_vars.container.healthcheck_fail | default('none') }}"

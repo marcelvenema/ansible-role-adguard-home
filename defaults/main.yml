@@ -59,7 +59,7 @@ adguard_home:
       - "adguardhome/work:/opt/adguardhome/work:Z"
       - "adguardhome/config:/opt/adguardhome/conf:Z"
     # volume_mode is the mode of the volume used in the container. example: "0777" or "0755". Default is "0777".
-    volume_mode: "0777"
+    volume_mode: "0700"
     # environment is a list of environment variables used in the container. example: ["DYNAMIC_CONFIG_ENABLED=true"].
     # environment:
     # healthcheck is the command used to check if the container is healthy. example: "curl -f http://localhost:8080/health || exit 1".
@@ -68,9 +68,15 @@ adguard_home:
     healthcheck_start: "30s"
     # container_quadlet_options is a list of options used in the container. example: ["Environment=NODE_ENV=production",
     # "HealthCmd='wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1 '"].
-    # quadlet_options:
-
-
+    quadlet_options:
+     - |
+       Environment=TZ=Europe/Amsterdam
+       [Service]
+       Restart=unless-stopped
+       RestartSec=10
+       [Install]
+       WantedBy=default.target
+     
   # secrets contains the configuration for the vault used for storing secrets and configuration data.
   secrets:
     # secret_name is the unique id of the vault used for storing secrets and configuration data. default is {{ ansible_fqdn }}.
