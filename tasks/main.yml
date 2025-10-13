@@ -49,6 +49,10 @@
   ansible.builtin.include_tasks: uninstall.yml
   when: action == "uninstall"
 
+- name: Start configure action...
+  ansible.builtin.include_tasks: configure.yml
+  when: action == "configure"
+
 - name: Start start action...
   ansible.builtin.include_tasks: start.yml
   when: action == "start"
