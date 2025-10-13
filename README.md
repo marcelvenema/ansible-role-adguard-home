@@ -15,8 +15,8 @@ Latest version:
 <table style="border:0px; width:100%">
 <tr><th>Deployment</th><th>Administration</th></tr>
 <tr>
-  <td valign=top>install<br>uninstall<br></td>
-    <td valign=top><br> <br></td>
+  <td valign=top>install<br>uninstall<br>configure<br></td>
+    <td valign=top>start<br>stop<br></td>
 </tr></table>
 
 ## Deployment
@@ -49,6 +49,54 @@ variables:<br>
      vars:
        action : uninstall
 ```
+
+
+action: **configure**<br>
+Configure AdGuard Home.<br>
+variables:<br>
+<kbd>none</kbd><br>
+
+```
+- name: Uninstall Adguard Home
+  hosts: localhost
+  roles:
+   - role: adguard-home
+     vars:
+       action : configure
+```
+
+
+## Administration
+
+action: **start**<br>
+Start AdGuard Home podman container.<br>
+variables:<br>
+<kbd>none</kbd><br>
+
+```
+- name: Uninstall Adguard Home
+  hosts: localhost
+  roles:
+   - role: adguard-home
+     vars:
+       action : start
+```
+
+
+action: **stop**<br>
+Stop AdGuard Home podman container.<br>
+variables:<br>
+<kbd>none</kbd><br>
+
+```
+- name: Uninstall Adguard Home
+  hosts: localhost
+  roles:
+   - role: adguard-home
+     vars:
+       action : stop
+```
+
 
 ***
 
@@ -97,7 +145,7 @@ When used as a stand-alone Ansible project:
 ```
 
 ## Additional information
-The UI is accessible via `https://<servername/ip>:8084`.
+The UI is accessible via `http://<servername/ip>:8084`.
 
 ## License
 MIT
