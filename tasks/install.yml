@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## AdGuard Home install action                         ##
 #########################################################
@@ -11,7 +10,7 @@
 # Run uninstall if uninstall is set
 - name: Run uninstall task...
   ansible.builtin.include_tasks: uninstall.yml
-  when: adguard_home_vars.container.uninstall == true
+  when: adguard_home_vars.container.uninstall | bool
 
 #########################################################
 ## Installation on podman                              ##
@@ -20,7 +19,6 @@
 - name: Install container on Podman...
   when: adguard_home_vars.container.platform == "podman"
   block:
-
     # Gather installed packages
     - name: Gather installed packages
       ansible.builtin.package_facts:
@@ -30,7 +28,7 @@
     - name: Check if podman is detected
       ansible.builtin.assert:
         that: '"podman" in ansible_facts.packages'
-        fail_msg: "Podman is not installed. Please install Podman first. Cannot continue..."
+        fail_msg: Podman is not installed. Please install Podman first. Cannot continue...
 
     #####################################################
     ## Volume configuration                            ##
@@ -62,26 +60,29 @@
 
     # Ensure firewall service is running
     - name: Ensure firewall service is running...
+      become: true
       ansible.builtin.service:
         name: firewalld
         state: started
         enabled: true
 
     - name: Open firewall ports for host side of mappings
+      become: true
       ansible.posix.firewalld:
         zone: public
         port: "{{ item }}"
         state: enabled
         permanent: true
-        immediate: true
+        immediate: false
       loop: "{{ firewall_ports | unique }}"
+      notify: Reload firewalld
 
     #####################################################
     ## Import container                                ##
     #####################################################
 
     # Import container
-    - name: "Install container on podman ({{ adguard_home_vars.container.name }})..."
+    - name: Install container on podman ({{ adguard_home_vars.container.name }})...
       ansible.builtin.include_role:
         name: podman
       vars:

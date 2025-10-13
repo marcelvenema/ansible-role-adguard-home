@@ -1,0 +1,25 @@
+---
+# Stop AdGuard Home container using podman role
+- name: Stop on podman ({{ adguard_home_vars.container.name }})
+  when: adguard_home_vars.container.platform == "podman"
+  block:
+    # List containers from podman
+    - name: Gather containers from podman...
+      ansible.builtin.include_role:
+        name: podman
+      vars:
+        action: get_containers
+        container_name: "{{ adguard_home_vars.container.name }}"
+        result_var: result_get_containers
+
+    # Stop container
+    - name: Stop container {{ adguard_home_vars.container.name }}
+      ansible.builtin.include_role:
+        name: podman
+      vars:
+        action: stop_container
+        container_name: "{{ adguard_home_vars.container.name }}"
+        result_var: result_stop_container
+      when: result_get_containers is defined and ( result_get_containers | string is search(adguard_home_vars.container.name) )
+
+    # Check result TODO

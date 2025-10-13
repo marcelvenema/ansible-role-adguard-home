@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Adguard Home configure action                       ##
 #########################################################
@@ -14,38 +13,31 @@
   ansible.posix.firewalld:
     zone: public
     port_forward:
-      -  port: "53"
-         proto: "tcp"
-         toport: "8053"
+      - port: 53
+        proto: tcp
+        toport: 8053
     permanent: true
-    immediate: true
+    immediate: false
     state: enabled
+  notify: Reload firewalld
 
 # redirect port 53 UDP
 - name: Redirect DNS port 53 to 8053 (UDP)...
   become: true
   ansible.posix.firewalld:
     zone: public
-    port_forward: 
-      -  port: "53"
-         proto: "udp"
-         toport: "8053"
+    port_forward:
+      - port: 53
+        proto: udp
+        toport: 8053
     permanent: true
-    immediate: true
+    immediate: false
     state: enabled
-
-# Reload firewall to apply changes
-- name: Reload firewalld to apply changes
-  become: true
-  ansible.builtin.systemd:
-    name: firewalld
-    state: reloaded
+  notify: Reload firewalld
 
 #########################################################
 ## Configure AdGuard Home                              ##
 #########################################################
-
-
 
 #########################################################
 ## Post-configuration                                  ##

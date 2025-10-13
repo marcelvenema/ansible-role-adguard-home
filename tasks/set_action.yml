@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Set action                                          ##
 #########################################################
@@ -16,24 +15,17 @@
 - name: Podman is detected...
   when: '"podman" in ansible_facts.packages'
   block:
-
     # List containers from podman
     - name: Gather containers from podman...
       ansible.builtin.include_role:
         name: podman
       vars:
-        action: "get_containers"
+        action: get_containers
         container_name: "{{ adguard_home_vars.container.name }}"
-        result_var: "result_get_containers"
+        result_var: result_get_containers
 
-    # Set action variable
-    - name: Set action variable
+    # Default to install if container is absent; otherwise do not override action
+    - name: Set action to install when container is absent
       ansible.builtin.set_fact:
-        action: "install"
-      when: 'adguard_home_vars.container.name not in result_get_containers'
-
-    # Set action variable
-    - name: Set action variable
-      ansible.builtin.set_fact:
-        action: "start"
-      when: '"Exited" in result_get_containers'
+        action: install
+      when: result_get_containers is defined and ( result_get_containers | string is not search(adguard_home_vars.container.name) )

@@ -1,5 +1,4 @@
 ---
-
 #########################################################
 ## Uninstall action                                    ##
 #########################################################
@@ -13,53 +12,53 @@
 
 # Set keep_data if not defined
 - name: Set keep_data if not defined
-  set_fact:
+  ansible.builtin.set_fact:
     keep_data: false
   when: keep_data is not defined
-  
+
 #########################################################
 ## Uninstall via podman                                ##
 #########################################################
 
-- name: "Uninstall {{ adguard_home_vars.container.name }} on podman"
-  when: platform == "podman"
+- name: Uninstall on podman ({{ adguard_home_vars.container.name }})
+  when: adguard_home_vars.container.platform == "podman"
   block:
-
     # List containers from podman
     - name: Gather containers from podman...
       ansible.builtin.include_role:
         name: podman
       vars:
-        action: "get_containers"
+        action: get_containers
         container_name: "{{ adguard_home_vars.container.name }}"
-        result_var: "result_get_containers"
+        result_var: result_get_containers
 
     # Remove container
-    - name: "Remove container {{ adguard_home_vars.container.name }}"
+    - name: Remove container {{ adguard_home_vars.container.name }}
       ansible.builtin.include_role:
         name: podman
       vars:
-        action: "delete_container"
+        action: delete_container
         container_name: "{{ adguard_home_vars.container.name }}"
-        result_var: "result_delete_container"
-      when: 'adguard_home_vars.container.name in result_get_containers'
+        result_var: result_delete_container
+      when: result_get_containers is defined and ( result_get_containers | string is search(adguard_home_vars.container.name) )
 
-    # Check result TODO
+# Check result TODO
 
 #########################################################
 ## Uninstall data                                      ##
 #########################################################
 
 # Start destroy_volumes from podman role
-- name: "Destroy container data folders for {{ adguard_home_vars.container.name }}..."
+- name: Destroy container data folders for {{ adguard_home_vars.container.name }}...
+  become: true
   ansible.builtin.include_role:
     name: podman
   vars:
     action: destroy_volumes
     container_volumes: "{{ adguard_home_vars.container.volumes }}"
   when:
-    - platform == "podman"
-    - keep_data == false
+    - adguard_home_vars.container.platform == "podman"
+    - not (keep_data | bool)
 
 #########################################################
 ## Post-uninstall                                      ##
@@ -67,5 +66,5 @@
 
 # Unset variables
 - name: Unset variables
-  set_fact:
-    keep_data: null
+  ansible.builtin.set_fact:
+    keep_data:
