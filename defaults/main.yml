@@ -62,6 +62,7 @@ adguard_home:
     volume_mode: "0700"
     # environment is a list of environment variables used in the container. example: ["DYNAMIC_CONFIG_ENABLED=true"].
     # environment:
+
     # healthcheck is the command used to check if the container is healthy. example: "curl -f http://localhost:8080/health || exit 1".
     healthcheck: wget --no-check-certificate -qO- http://127.0.0.1:3000/control/status | grep -q '"running":true' || exit 1
     # healthcheck_start is the time to wait before starting the health check. example: "30s".
